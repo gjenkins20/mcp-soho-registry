@@ -1,0 +1,24 @@
+# Minimal Home Lab Topology
+name: "Home Lab"
+devices:
+  - type: server
+    vendor: raspberry-pi
+    model: Pi 5
+    ip: 192.168.1.10
+    services: [docker, portainer]
+  - type: nas
+    vendor: synology
+    model: DS220+
+    ip: 192.168.1.20
+  - type: router
+    vendor: ubiquiti
+    model: USG-3P
+    ip: 192.168.1.1
+use_cases:
+  - network-monitoring
+  - backup
+  - container-management
+constraints:
+  max_agents: 4
+  require_local: true
+  approval_gated: [firewall]

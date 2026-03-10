@@ -1,0 +1,34 @@
+# Small Office Setup
+name: "Small Office"
+devices:
+  - type: firewall
+    vendor: pfsense
+    model: SG-3100
+    ip: 10.0.0.1
+  - type: switch
+    vendor: ubiquiti
+    model: USW-24-POE
+    ip: 10.0.0.2
+  - type: access-point
+    vendor: ubiquiti
+    model: U6-Pro
+    ip: 10.0.0.3
+  - type: nas
+    vendor: synology
+    model: DS920+
+    ip: 10.0.0.10
+    services: [docker, surveillance-station]
+  - type: server
+    vendor: proxmox
+    model: Custom
+    ip: 10.0.0.20
+    services: [docker, grafana, prometheus]
+use_cases:
+  - network-monitoring
+  - security-alerting
+  - backup
+  - log-management
+constraints:
+  max_agents: 6
+  require_local: true
+  approval_gated: [firewall, credentials, dns]

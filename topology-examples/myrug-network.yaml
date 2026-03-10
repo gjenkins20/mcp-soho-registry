@@ -1,0 +1,34 @@
+# MYRUG Home Network Topology
+name: "MYRUG Home Network"
+devices:
+  - type: firewall
+    vendor: fortinet
+    model: FortiGate 40F
+    ip: 192.168.1.99
+  - type: nas
+    vendor: buffalo
+    model: LS-XL12C
+    ip: 192.168.1.3
+  - type: server
+    vendor: raspberry-pi
+    model: Pi 4B
+    ip: 192.168.1.2
+    services: [pihole, docker]
+  - type: server
+    vendor: raspberry-pi
+    model: Pi 5
+    ip: 192.168.1.4
+    services: [immich, grafana, prometheus]
+  - type: access-point
+    vendor: tp-link
+    model: Archer A54
+    ip: 192.168.95.2
+use_cases:
+  - network-monitoring
+  - security-alerting
+  - photo-management
+  - home-automation
+constraints:
+  max_agents: 8
+  require_local: true
+  approval_gated: [firewall, credentials]

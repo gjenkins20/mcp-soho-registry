@@ -1,0 +1,24 @@
+# Media Server Setup
+name: "Media Server"
+devices:
+  - type: server
+    vendor: raspberry-pi
+    model: Pi 5
+    ip: 192.168.1.10
+    services: [docker, jellyfin, sonarr, radarr]
+  - type: nas
+    vendor: qnap
+    model: TS-253D
+    ip: 192.168.1.20
+  - type: router
+    vendor: pfsense
+    model: SG-3100
+    ip: 192.168.1.1
+use_cases:
+  - media-streaming
+  - backup
+  - network-monitoring
+constraints:
+  max_agents: 4
+  require_local: true
+  approval_gated: [firewall]

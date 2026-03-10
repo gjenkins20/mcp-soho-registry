@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+
+# Database
+*.db
+
+# Credentials & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Internal development files
+CLAUDE.md
+.claude/
+agents/
+marketing/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# uv
+uv.lock
