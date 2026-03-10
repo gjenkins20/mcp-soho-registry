@@ -25,6 +25,8 @@ CLAUDE.md
 .claude/
 agents/
 marketing/
+plan.md
+topology-examples/myrug-*
 
 # IDE
 .vscode/
