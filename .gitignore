@@ -1,19 +1,19 @@
 # Python
 __pycache__/
 *.py[cod]
+*$py.class
 *.egg-info/
 dist/
 build/
 .eggs/
 
-# Virtual environments
+# Virtual environment
 .venv/
-venv/
 
 # Database
 *.db
 
-# Credentials & secrets
+# Credentials
 .env
 .env.local
 .env.*.local
@@ -23,18 +23,17 @@ venv/
 # Internal development files
 CLAUDE.md
 .claude/
-agents/
-marketing/
 plan.md
-topology-examples/myrug-*
 
 # IDE
-.vscode/
 .idea/
+.vscode/
+*.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
-# uv
-uv.lock
+# Shallow clones cache
+cache/

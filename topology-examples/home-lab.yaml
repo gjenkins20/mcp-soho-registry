@@ -1,24 +1,40 @@
-# Minimal Home Lab Topology
+# Example SOHO topology — home lab
+#
+# Copy this file, replace the placeholder values with your actual
+# device details, and feed it to the orchestrator:
+#
+#   mcp-orchestrate plan my-topology.yaml
+#
 name: "Home Lab"
 devices:
+  - type: firewall
+    vendor: fortinet
+    model: FortiGate 40F
+    ip: 10.0.0.1
+  - type: nas
+    vendor: synology
+    model: DS923+
+    ip: 10.0.0.10
+  - type: server
+    vendor: raspberry-pi
+    model: Pi 4B
+    ip: 10.0.0.20
+    services: [pihole, docker]
   - type: server
     vendor: raspberry-pi
     model: Pi 5
-    ip: 192.168.1.10
-    services: [docker, portainer]
-  - type: nas
-    vendor: synology
-    model: DS220+
-    ip: 192.168.1.20
-  - type: router
+    ip: 10.0.0.21
+    services: [immich, grafana, prometheus]
+  - type: access-point
     vendor: ubiquiti
-    model: USG-3P
-    ip: 192.168.1.1
+    model: U6 Lite
+    ip: 10.0.0.2
 use_cases:
   - network-monitoring
-  - backup
-  - container-management
+  - security-alerting
+  - photo-management
+  - home-automation
 constraints:
-  max_agents: 4
-  require_local: true
-  approval_gated: [firewall]
+  max_agents: 8
+  require_local: true            # no cloud dependencies
+  approval_gated: [firewall, credentials]

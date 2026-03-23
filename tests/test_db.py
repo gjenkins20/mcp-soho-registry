@@ -1,79 +1,65 @@
 """Tests for the database layer."""
 
-from mcp_registry.db import RegistryDB
-from mcp_registry.models import MCPServer
+import sqlite3
+from pathlib import Path
+
+from mcp_registry.db import get_connection, search_servers, upsert_server
 
 
-class TestRegistryDB:
-    def test_upsert_and_get(self, db, sample_server):
-        db.upsert_server(sample_server)
-        result = db.get_server("example/fortigate-mcp-server")
-        assert result is not None
-        assert result.name == "fortigate-mcp-server"
-        assert result.stars == 42
-        assert sorted(result.tool_names) == [
-            "get_interfaces", "get_policies", "get_routes",
-            "get_system_info", "get_vpn_status",
-        ]
-        assert result.vendors == ["fortinet"]
-        assert result.domain_tags == ["network", "security"]
+def _make_server(**overrides) -> dict:
+    defaults = {
+        "name": "test-mcp",
+        "full_name": "user/test-mcp",
+        "url": "https://github.com/user/test-mcp",
+        "description": "A test MCP server",
+        "language": "Python",
+        "stars": 42,
+        "last_commit": "2026-03-01",
+        "tools_count": 3,
+        "tool_names": ["tool_a", "tool_b", "tool_c"],
+        "vendors": ["fortinet"],
+        "domain_tags": ["network", "security"],
+        "maturity_score": 55.0,
+        "soho_relevance": 65.0,
+        "has_tests": True,
+        "has_docs": True,
+        "license": "MIT",
+    }
+    defaults.update(overrides)
+    return defaults
 
-    def test_upsert_updates_existing(self, db, sample_server):
-        db.upsert_server(sample_server)
-        sample_server.stars = 100
-        sample_server.tool_names = ["new_tool"]
-        db.upsert_server(sample_server)
-        result = db.get_server("example/fortigate-mcp-server")
-        assert result.stars == 100
-        assert result.tool_names == ["new_tool"]
 
-    def test_get_nonexistent(self, db):
-        assert db.get_server("nonexistent/repo") is None
+class TestDatabase:
+    def test_upsert_and_search(self, tmp_path: Path):
+        conn = get_connection(tmp_path / "test.db")
+        upsert_server(conn, _make_server())
 
-    def test_list_servers(self, db, sample_servers):
-        for s in sample_servers:
-            db.upsert_server(s)
-        results = db.list_servers()
-        assert len(results) == 3
+        rows = search_servers(conn)
+        assert len(rows) == 1
+        assert rows[0]["full_name"] == "user/test-mcp"
 
-    def test_list_filter_by_domain(self, db, sample_servers):
-        for s in sample_servers:
-            db.upsert_server(s)
-        results = db.list_servers(domain="network")
-        assert len(results) == 1
-        assert results[0].full_name == "user1/fortigate-mcp"
+    def test_upsert_updates_existing(self, tmp_path: Path):
+        conn = get_connection(tmp_path / "test.db")
+        upsert_server(conn, _make_server(stars=10))
+        upsert_server(conn, _make_server(stars=99))
 
-    def test_list_filter_by_vendor(self, db, sample_servers):
-        for s in sample_servers:
-            db.upsert_server(s)
-        results = db.list_servers(vendor="synology")
-        assert len(results) == 1
-        assert results[0].full_name == "user2/synology-mcp"
+        rows = search_servers(conn)
+        assert len(rows) == 1
+        assert rows[0]["stars"] == 99
 
-    def test_list_min_maturity(self, db, sample_servers):
-        for s in sample_servers:
-            db.upsert_server(s)
-        results = db.list_servers(min_maturity=60)
-        assert all(s.maturity_score >= 60 for s in results)
+    def test_search_by_query(self, tmp_path: Path):
+        conn = get_connection(tmp_path / "test.db")
+        upsert_server(conn, _make_server(full_name="a/fortigate-mcp", name="fortigate-mcp"))
+        upsert_server(conn, _make_server(full_name="b/generic-tool", name="generic-tool"))
 
-    def test_list_sort_by_stars(self, db, sample_servers):
-        for s in sample_servers:
-            db.upsert_server(s)
-        results = db.list_servers(sort_by="stars")
-        assert results[0].stars >= results[-1].stars
+        rows = search_servers(conn, query="fortigate")
+        assert len(rows) == 1
 
-    def test_search(self, db, sample_servers):
-        for s in sample_servers:
-            db.upsert_server(s)
-        db.rebuild_fts()
-        results = db.search_servers("fortigate")
-        assert len(results) >= 1
-        assert results[0].full_name == "user1/fortigate-mcp"
+    def test_filter_by_min_scores(self, tmp_path: Path):
+        conn = get_connection(tmp_path / "test.db")
+        upsert_server(conn, _make_server(full_name="a/high", maturity_score=80, soho_relevance=70))
+        upsert_server(conn, _make_server(full_name="b/low", maturity_score=10, soho_relevance=5))
 
-    def test_stats(self, db, sample_servers):
-        for s in sample_servers:
-            db.upsert_server(s)
-        stats = db.get_stats()
-        assert stats["total_servers"] == 3
-        assert stats["unique_vendors"] >= 1
-        assert stats["unique_tags"] >= 1
+        rows = search_servers(conn, min_maturity=50, min_soho=50)
+        assert len(rows) == 1
+        assert rows[0]["full_name"] == "a/high"

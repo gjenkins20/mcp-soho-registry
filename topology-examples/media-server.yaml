@@ -4,16 +4,16 @@ devices:
   - type: server
     vendor: raspberry-pi
     model: Pi 5
-    ip: 192.168.1.10
+    ip: 10.0.0.10
     services: [docker, jellyfin, sonarr, radarr]
   - type: nas
     vendor: qnap
     model: TS-253D
-    ip: 192.168.1.20
+    ip: 10.0.0.20
   - type: router
     vendor: pfsense
     model: SG-3100
-    ip: 192.168.1.1
+    ip: 10.0.0.1
 use_cases:
   - media-streaming
   - backup
